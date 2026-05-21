@@ -1,15 +1,12 @@
-FROM node:20-alpine
+FROM node:20-bookworm-slim
 
-# Alpine 3.19+ splits ImageMagick format support into sub-packages.
-RUN apk add --no-cache \
-    bash \
-    potrace \
-    imagemagick \
-    imagemagick-jpeg \
-    imagemagick-png \
-    imagemagick-webp \
-    imagemagick-heic \
-    imagemagick-tiff
+# Debian bundles ImageMagick delegates in one package (avoids Alpine sub-package drift on Render).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash \
+        potrace \
+        imagemagick \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -18,7 +15,7 @@ COPY server/package.json server/server.js ./
 
 RUN chmod +x notebook-to-svg.sh \
     && magick -version \
-    && magick identify -list format | grep -E '^(\s+)(JPEG|PNG|HEIC|WEBP)' || true
+    && magick identify -list format | grep -iE 'JPEG|PNG|WEBP|HEIC' | head -8 || true
 
 ENV PORT=8080
 ENV NODE_ENV=production
