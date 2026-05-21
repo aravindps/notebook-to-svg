@@ -10,6 +10,7 @@ RUN echo "BUILD: debian-bookworm imagemagick (not apk)" \
         imagemagick \
         libmagickcore-6.q16-6-extra \
     && rm -rf /var/lib/apt/lists/* \
+    && ln -sf "$(command -v convert)" /usr/local/bin/magick 2>/dev/null || true \
     && for policy in /etc/ImageMagick-6/policy.xml /etc/ImageMagick/policy.xml; do \
         if [ -f "$policy" ]; then \
             sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' "$policy"; \
