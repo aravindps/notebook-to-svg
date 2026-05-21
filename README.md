@@ -49,16 +49,18 @@ Set `TOKEN` in `.env` for auth; `make test-api` reads it automatically.
 
 ### HTTP API (Docker)
 
+ImageMagick, Potrace, and format delegates (JPEG, PNG, HEIC, WebP) are **installed inside the image** — nothing on the host is required except Docker.
+
 ```bash
 make setup
-make up             # docker compose up --build -d
+make up             # docker compose up --build -d  (rebuild after Dockerfile changes)
 make down           # docker compose down
 make logs           # follow container logs
 ```
 
 **Health:** `GET http://127.0.0.1:8080/health` → `ok`
 
-**Convert:** `POST http://127.0.0.1:8080/` with raw image bytes (JPEG/PNG).
+**Convert:** `POST http://127.0.0.1:8080/` with raw image bytes (JPEG/PNG/HEIC from iPhone). Uploads are saved with the correct extension so ImageMagick can decode them.
 
 - Header: `Authorization: Bearer <TOKEN>` (required when `TOKEN` is set)
 - Response: `image/svg+xml` with `fill="currentColor"`
@@ -90,9 +92,16 @@ Example CSS:
 
 ## iOS Shortcut (sketch)
 
-1. **Receive** image from Share sheet.
-2. **Get contents of URL** — `POST` to `https://your-host/` with **Bearer** token; body = image; show “Converting…” while waiting.
-3. **Text** — combine:
+The API expects **raw image bytes** in the POST body — not JSON, not a URL string, not Form text fields.
+
+1. **Receive** image from Share sheet (or **Select Photos**).
+2. **Get contents of URL**
+   - URL: `https://your-host/`
+   - Method: **POST**
+   - Headers: `Authorization` = `Bearer YOUR_TOKEN`
+   - **Request Body: File** ← important (choose the image variable, not “Form”)
+   - Do not set Content-Type manually unless you use File; the server sniffs JPEG/PNG/HEIC from bytes
+3. **Text** — wrap the response:
 
    ```
    <div class="notebook-svg">
@@ -102,7 +111,14 @@ Example CSS:
 
 4. Copy to clipboard → paste into your editor.
 
+If you see `insufficient image data` or `image too small`, the Shortcut is not sending the photo file — fix **Request Body** to **File**.
+
 Use your own host (home server, VPS, `make serve` behind a tunnel, etc.).
+
+
+## Demo
+
+Live example on a Bear Blog with theme-aware notebook ink: [inkandstillness.com](https://inkandstillness.com) (post: [Putting lines to thoughts](https://inkandstillness.com/putting-lines-to-thoughts/)). That site wraps SVG in `.ink-svg`; this repo uses `.notebook-svg` in examples — same idea, different class name.
 
 ## Prior art
 
