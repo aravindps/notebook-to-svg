@@ -1,6 +1,9 @@
 FROM node:20-bookworm-slim
 
-RUN apt-get update \
+# NOT Alpine — Render must build from aravindps/notebook-to-svg @ main
+
+RUN echo "BUILD: debian-bookworm imagemagick (not apk)" \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         bash \
         potrace \
