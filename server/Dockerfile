@@ -25,8 +25,10 @@ COPY notebook-to-svg.sh ./
 COPY server/package.json server/server.js ./
 
 RUN chmod +x notebook-to-svg.sh \
-    && magick -version \
-    && magick identify -list format | grep -iE 'JPEG|PNG|WEBP|HEIC' | head -8 || true
+    && (command -v magick || command -v convert) \
+    && (magick -version 2>/dev/null || convert -version) \
+    && (magick identify -list format 2>/dev/null || convert -list format) \
+        | grep -iE 'JPEG|PNG|WEBP|HEIC' | head -8 || true
 
 ENV PORT=8080
 ENV NODE_ENV=production

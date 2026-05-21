@@ -20,9 +20,9 @@
 #     MAX_WIDTH  pre-resize cap (px) to keep SVG path count and size in check.
 #                default: 1500
 #
-# Requires: ImageMagick (magick) and potrace
-#   macOS:  brew install potrace imagemagick
-#   Alpine: apk add imagemagick potrace bash
+# Requires: ImageMagick (magick or convert) and potrace
+#   macOS:  brew install potrace imagemagick  → magick
+#   Debian/Docker: apt install imagemagick     → often convert (IM6)
 
 set -euo pipefail
 
@@ -43,10 +43,20 @@ if [ ! -f "$IN" ]; then
     exit 66
 fi
 
-for tool in magick potrace sed awk; do
+if command -v magick >/dev/null 2>&1; then
+    MAGICK=magick
+elif command -v convert >/dev/null 2>&1; then
+    MAGICK=convert
+else
+    echo "missing tool: magick or convert (ImageMagick)" >&2
+    echo "  macOS: brew install potrace imagemagick" >&2
+    echo "  Debian: apt install imagemagick potrace" >&2
+    exit 69
+fi
+
+for tool in potrace sed awk; do
     if ! command -v "$tool" >/dev/null 2>&1; then
         echo "missing tool: $tool" >&2
-        echo "  install with: brew install potrace imagemagick" >&2
         exit 69
     fi
 done
@@ -60,7 +70,7 @@ RAW="$TMP/raw.svg"
 # 1. Photo -> 1-bit PBM. Auto-orient handles EXIF rotation. Resize caps the
 #    raster resolution so potrace doesn't emit thousands of tiny paths.
 #    Grayscale + level + threshold crushes paper to white and ink to black.
-magick "$IN" \
+"$MAGICK" "$IN" \
     -auto-orient \
     -resize "${MAX_WIDTH}x>" \
     -colorspace Gray \
