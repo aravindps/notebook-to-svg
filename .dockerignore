@@ -1,0 +1,6 @@
+.env
+.git
+README.md
+LICENSE
+docker-compose.yml
+.env.example

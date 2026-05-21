@@ -1,0 +1,6 @@
+.env
+.DS_Store
+test-fixture.png
+*.jpg
+*.jpeg
+*.png

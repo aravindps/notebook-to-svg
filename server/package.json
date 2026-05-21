@@ -1,0 +1,8 @@
+{
+  "name": "notebook-to-svg-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "description": "HTTP wrapper around notebook-to-svg.sh for mobile Shortcuts and other clients."
+}
